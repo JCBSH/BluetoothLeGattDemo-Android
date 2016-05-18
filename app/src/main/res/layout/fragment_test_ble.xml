@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/control_container"
+              android:orientation="vertical"
+              android:layout_marginTop="50dp"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView
+        style="@style/My2Theme"
+        android:text="@string/laser_switch_label"
+        android:textStyle="bold"/>
+    <Switch
+        style="@style/My2Theme"
+        android:layout_width="wrap_content"
+        android:id="@+id/laser_switch"
+        android:layout_marginBottom="30dp"/>
+    <TextView
+        style="@style/My2Theme"
+        android:text="Motor Control"/>
+
+    <LinearLayout
+        style="@style/My2Theme"
+
+        android:orientation="horizontal">
+        <TextView
+            style="@style/My2Theme2"
+            android:gravity="right"
+            android:textColor="@android:color/holo_blue_light"
+            android:text="@string/motor_current_position_label"/>
+        <TextView
+            style="@style/My2Theme2"
+            android:id="@+id/motor_current_position"
+            android:text="0"/>
+    </LinearLayout>
+
+    <LinearLayout
+        style="@style/My2Theme"
+        android:orientation="horizontal">
+        <TextView
+            style="@style/My2Theme2"
+            android:gravity="right"
+            android:textColor="@android:color/holo_blue_light"
+            android:text="@string/motor_intended_position_label"/>
+        <TextView
+            style="@style/My2Theme2"
+            android:id="@+id/motor_intended_position"
+            android:text="0"/>
+    </LinearLayout>
+
+    <LinearLayout
+        style="@style/My2Theme"
+        android:orientation="horizontal">
+        <Button
+            style="@style/My2Theme3"
+            android:id="@+id/decrease_motor_position_button"
+            android:text="-"/>
+        <Button
+            style="@style/My2Theme3"
+            android:id="@+id/increase_motor_position_button"
+            android:text="+"/>
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        style="@style/My2Theme"
+        android:orientation="horizontal">
+        <Button
+            style="@style/My2Theme3"
+            android:id="@+id/step_full_button"
+            android:text="1"/>
+        <Button
+            style="@style/My2Theme3"
+            android:id="@+id/step_2_button"
+            android:text="1/2"/>
+        <Button
+            style="@style/My2Theme3"
+            android:id="@+id/step_4_button"
+            android:text="1/4"/>
+        <Button
+            style="@style/My2Theme3"
+            android:id="@+id/step_8_button"
+            android:text="1/8"/>
+        <Button
+            style="@style/My2Theme3"
+            android:id="@+id/step_16_button"
+            android:text="1/16"/>
+        <Button
+            style="@style/My2Theme3"
+            android:id="@+id/step_32_button"
+            android:text="1/32"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        style="@style/My2Theme"
+        android:orientation="horizontal">
+        <TextView
+            style="@style/My2Theme3"
+            android:gravity="right"
+            android:textColor="@android:color/holo_blue_light"
+            android:text="@string/motor_step_label"/>
+        <TextView
+            style="@style/My2Theme3"
+            android:gravity="center"
+            android:id="@+id/motor_current_step_mode"
+            android:minEms="5"
+            android:text="1"/>
+    </LinearLayout>
+
+    <LinearLayout
+        style="@style/My2Theme"
+        android:orientation="horizontal">
+        <TextView
+            style="@style/My2Theme3"
+            android:gravity="right"
+            android:textColor="@android:color/holo_blue_light"
+            android:text="@string/motor_status_label"/>
+        <TextView
+            style="@style/My2Theme3"
+            android:gravity="center"
+            android:id="@+id/motor_MM_string"
+            android:minEms="5"
+            android:text="@string/motor_stop_status"/>
+        <TextView
+            style="@style/My2Theme3"
+            android:id="@+id/motor_MM_Int"
+            android:text="0"/>
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        style="@style/My2Theme">
+
+    </LinearLayout>
+
+
+
+</LinearLayout>

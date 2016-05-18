@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">BlueToothLeGattDemo</string>
+
+
+    <string name="menu_connect">Connect</string>
+    <string name="menu_disconnect">Disconnect</string>
+    <string name="menu_connecting">Connecting</string>
+    <string name="laser_switch_label">Laser Control</string>
+    <string name="motor_current_position_label">Current position:  </string>
+    <string name="motor_intended_position_label">intended position:  </string>
+    <string name="motor_status_label">Motor Status: </string>
+    <string name="motor_stop_status">stopped</string>
+    <string name="motor_moving_status">moving</string>
+    <string name="motor_initialize_status">initializing</string>
+    <string name="motor_step_label">Current Step:</string>
+    <string name="test_ble_button">TEST BLE</string>
+    <string name="error_bluetooth_not_supported">BlueTooth Low Energy not support!</string>
+    <string name="error_bluetooth_enable_fail">failed to enable bluetooth</string>
+    <string name="bluetooth_error_alert_title">BlueTooth error</string>
+</resources>
