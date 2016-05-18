@@ -1,24 +1,23 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:tools="http://schemas.android.com/tools"
-      tools:context=".MainActivity">
+      xmlns:BlueToothLeGattDemo="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/menu_refresh"
           android:checkable="false"
           android:orderInCategory="1"
-          android:showAsAction="ifRoom"
+          BlueToothLeGattDemo:showAsAction="ifRoom"
           android:title=""/>
 
     <item android:id="@+id/menu_disconnect"
           android:title="@string/menu_disconnect"
           android:orderInCategory="100"
-          android:showAsAction="ifRoom|withText"/>
+          BlueToothLeGattDemo:showAsAction="ifRoom|withText"/>
 
     <item android:id="@+id/menu_connect"
           android:title="@string/menu_connect"
           android:orderInCategory="100"
-          android:showAsAction="ifRoom|withText"/>
+          BlueToothLeGattDemo:showAsAction="ifRoom|withText"/>
 
     <item android:id="@+id/menu_connecting"
           android:title="@string/menu_connecting"
           android:orderInCategory="100"
-          android:showAsAction="ifRoom|withText"/>
+          BlueToothLeGattDemo:showAsAction="ifRoom|withText"/>
 </menu>

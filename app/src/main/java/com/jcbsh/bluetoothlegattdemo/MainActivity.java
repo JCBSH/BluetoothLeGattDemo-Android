@@ -1,6 +1,7 @@
 package com.jcbsh.bluetoothlegattdemo;
 
 import android.app.Fragment;
+import android.os.Bundle;
 
 
 public class MainActivity extends SingleFragmentActivity {
@@ -11,6 +12,11 @@ public class MainActivity extends SingleFragmentActivity {
     @Override
     protected String getLifeTag() {
         return LIFE_TAG;
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Override

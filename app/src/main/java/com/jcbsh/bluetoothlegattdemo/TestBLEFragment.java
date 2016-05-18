@@ -70,6 +70,8 @@ public class TestBLEFragment extends Fragment {
     private static final int STATE_CONNECTED = 2;
     private int mConnectionState = STATE_DISCONNECTED;
 
+    private boolean mCheck1 = false;
+    private boolean mCheck2 = false;
     protected final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -91,11 +93,8 @@ public class TestBLEFragment extends Fragment {
                     startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
                 } else {
                     //Log.d(getFragmentLifeTag(), "mBluetoothLeService.initialize() not isAdapterEnable");
-                    boolean check1 = checkACCESS_FINE_LOCATION();
-                    boolean check2 = checkACCESS_COARSE_LOCATION();
-                    if (check1 && check2) {
-                        mBluetoothLeService.startScan();
-                    }
+                    mCheck1 = checkACCESS_FINE_LOCATION();
+                    mCheck2 = checkACCESS_COARSE_LOCATION();
                 }
             }
 
@@ -264,7 +263,8 @@ public class TestBLEFragment extends Fragment {
 
         switch (requestCode) {
             case REQUEST_ENABLE_BT:
-                mBluetoothLeService.startScan();
+                mCheck1 = checkACCESS_FINE_LOCATION();
+                mCheck2 = checkACCESS_COARSE_LOCATION();
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
@@ -468,8 +468,6 @@ public class TestBLEFragment extends Fragment {
             if(grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getActivity(),
                         "Application will not run without coarse location access", Toast.LENGTH_SHORT).show();
-            } else if((grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                mBluetoothLeService.startScan();
             }
         }
 
@@ -477,8 +475,6 @@ public class TestBLEFragment extends Fragment {
             if(grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getActivity(),
                         "Application will not run without fine location access", Toast.LENGTH_SHORT).show();
-            } else if((grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                mBluetoothLeService.startScan();
             }
         }
     }

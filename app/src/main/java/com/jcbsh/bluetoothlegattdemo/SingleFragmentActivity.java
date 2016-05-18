@@ -1,15 +1,15 @@
 package com.jcbsh.bluetoothlegattdemo;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 /**
  * Created by JCBSH on 19/01/2016.
  */
-public abstract class SingleFragmentActivity extends Activity {
+public abstract class SingleFragmentActivity extends AppCompatActivity {
     protected static final String LIFE_TAG = "life_SingleFragmentActivity";
 
 
