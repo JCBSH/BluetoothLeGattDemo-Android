@@ -417,8 +417,9 @@ public class TestBLEFragment extends Fragment {
         intentFilter.addAction(BluetoothLeService.ACTION_SCANNING_IN_PROGRESS);
         intentFilter.addAction(BluetoothLeService.ACTION_SCANNING_FAIL);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_CPOS);
-        intentFilter.addAction(BluetoothLeService.ACTION_DATA_LASER_STATE_ZEROED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_MMODE);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_LASER_STATE_ZEROED);
+//        intentFilter.addAction(BluetoothLeService.ACTION_DATA_MOTOR_CPOS_ZEROED);
         return intentFilter;
     }
 
@@ -457,17 +458,6 @@ public class TestBLEFragment extends Fragment {
                 mCPTextView.setText("" + currentPosition * BluetoothLeService.STEP_MODIFIER);
                 mMotorDecButton.setEnabled(true);
                 mMotorIncButton.setEnabled(true);
-            } else if (BluetoothLeService.ACTION_DATA_LASER_STATE_ZEROED.equals(action)) {
-                Log.d(TAG, "ACTION_DATA_CHANGED_LASER_STATE");
-                int laserCurrentState = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, BluetoothLeService.LASER_OFF);
-                if (laserCurrentState == BluetoothLeService.LASER_OFF) {
-                    mLaserSwitch.setChecked(false);
-                } else {
-                    mLaserSwitch.setChecked(true);
-                }
-
-
-
             } else if (BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_MMODE.equals(action)) {
                 int motorMode = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0);
                 mMoveStatusIntTextView.setText("" + motorMode);
@@ -482,7 +472,20 @@ public class TestBLEFragment extends Fragment {
                         mMoveStatusStringTextView.setText(R.string.motor_moving_status);
                         break;
                 }
+            } else if (BluetoothLeService.ACTION_DATA_LASER_STATE_ZEROED.equals(action)) {
+                Log.d(TAG, "ACTION_DATA_CHANGED_LASER_STATE");
+                int laserCurrentState = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, BluetoothLeService.LASER_OFF);
+                if (laserCurrentState == BluetoothLeService.LASER_OFF) {
+                    mLaserSwitch.setChecked(false);
+                } else {
+                    mLaserSwitch.setChecked(true);
+                }
+
             }
+//            else if (BluetoothLeService.ACTION_DATA_MOTOR_CPOS_ZEROED.equals(action)) {
+//                int currentPosition = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0);
+//                mCPTextView.setText("" + currentPosition * BluetoothLeService.STEP_MODIFIER);
+//            }
         }
     }
 

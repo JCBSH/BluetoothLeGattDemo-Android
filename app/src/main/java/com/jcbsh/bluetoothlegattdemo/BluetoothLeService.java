@@ -79,6 +79,8 @@ public class BluetoothLeService extends Service {
     public final static String ACTION_ZEROING_START = "ACTION_ZEROING_START";
     public final static String ACTION_ZEROING_END = "ACTION_ZEROING_END";
     public final static String ACTION_DATA_LASER_STATE_ZEROED = "ACTION_DATA_LASER_STATE_ZEROED";
+    public final static String ACTION_DATA_MOTOR_CPOS_ZEROED = "ACTION_DATA_MOTOR_CPOS_ZEROED";
+
 
     public final static String ACTION_SCANNING_IN_PROGRESS = "ACTION_SCANNING_IN_PROGRESS";
     public final static String ACTION_SCANNING_FAIL = "ACTION_SCANNING_FAIL";
@@ -369,7 +371,9 @@ public class BluetoothLeService extends Service {
                     Log.d(TAG, "zeroing motor position in binary value " + ByteUtil.getBinaryString(IPData));
                     mIPCharacteristic.setValue(IPData);
                     //mIPCharacteristic.set
-                    mBluetoothGatt.writeCharacteristic(mIPCharacteristic);
+                    boolean b = mBluetoothGatt.writeCharacteristic(mIPCharacteristic);
+                    Log.d(TAG, "movingMotor " + b);
+                    //broadcastUpdate(ACTION_DATA_MOTOR_CPOS_ZEROED, MIN_STEP);
                     break;
                 case 0:
                     switchLaser(LASER_OFF);
