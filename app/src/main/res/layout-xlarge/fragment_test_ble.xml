@@ -3,7 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:id="@+id/control_container"
               android:orientation="vertical"
-              android:layout_marginTop="10dp"
+              android:layout_marginTop="50dp"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
@@ -15,7 +15,7 @@
         style="@style/My2Theme"
         android:layout_width="wrap_content"
         android:id="@+id/laser_switch"
-        android:layout_marginBottom="7dp"/>
+        android:layout_marginBottom="30dp"/>
     <TextView
         style="@style/My2Theme"
         android:text="Motor Control"/>

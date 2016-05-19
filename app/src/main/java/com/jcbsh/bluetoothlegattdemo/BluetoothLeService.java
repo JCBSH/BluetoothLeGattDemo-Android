@@ -673,5 +673,7 @@ public class BluetoothLeService extends Service {
     }
 
 
-
+    public int getConnectionState() {
+        return mConnectionState;
+    }
 }

@@ -149,11 +149,18 @@ public class TestBLEFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_disconnect:
-                //todo disconnect();
-
+                mBluetoothLeService.disconnect();
                 return true;
             case R.id.menu_connect:
-                //todo startScan();
+
+                if (mBluetoothLeService.isInitialized()) {
+                    mBluetoothLeService.reconnect();
+                } else {
+                    mBluetoothLeService.startScan();
+                }
+                mConnectionState = STATE_CONNECTING;
+                getActivity().invalidateOptionsMenu();
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -180,7 +187,6 @@ public class TestBLEFragment extends Fragment {
     private Handler mHandler;
     private LaserGattAttributes mLaserAttributes;
     private BluetoothLeScanner mBluetoothLeScanner;
-    private View mUIContainer;
     private TextView mCPTextView;
     private TextView mIPTextView;
     private Button mMotorIncButton;
@@ -201,7 +207,6 @@ public class TestBLEFragment extends Fragment {
 
         View v = inflater.inflate(R.layout.fragment_test_ble, container, false);
 
-        mUIContainer = (View) v.findViewById(R.id.control_container);
         mLaserSwitch = (Switch) v.findViewById(R.id.laser_switch);
         mCPTextView = (TextView) v.findViewById(R.id.motor_current_position);
         mIPTextView = (TextView) v.findViewById(R.id.motor_intended_position);
@@ -245,7 +250,6 @@ public class TestBLEFragment extends Fragment {
             }
         });
 
-        mUIContainer.setVisibility(View.INVISIBLE);
         return v;
     }
 
@@ -378,9 +382,11 @@ public class TestBLEFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                //todo
+                mConnectionState = STATE_CONNECTED;
+                getActivity().invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                //todo
+                mConnectionState = STATE_DISCONNECTED;
+                getActivity().invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_ZEROING_START.equals(action)) {
                 int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
                 getActivity().setRequestedOrientation(ORIENTATIONS_SCREEN.get(rotation));
@@ -389,8 +395,9 @@ public class TestBLEFragment extends Fragment {
 
             } else if (BluetoothLeService.ACTION_SCANNING_FAIL.equals(action)) {
                 if (getActivity() != null) {
-                    showAlert(getActivity().getResources().getString(R.string.bluetooth_error_alert_title)
-                            , "fail to detect bluetooth");
+                    mConnectionState = STATE_DISCONNECTED;
+                    getActivity().invalidateOptionsMenu();
+                    //todo
                 }
             }
         }
