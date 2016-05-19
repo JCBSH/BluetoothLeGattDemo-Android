@@ -19,4 +19,5 @@
     <string name="bluetooth_error_alert_title">BlueTooth error</string>
     <string name="not_connected_feedback">Not Connected</string>
     <string name="connecting_feedback">Connecting</string>
+    <string name="reconnecting_feedback">Reconnecting</string>
 </resources>

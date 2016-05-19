@@ -54,8 +54,9 @@ public class TestBLEFragment extends Fragment {
     }
 
     private static final int STATE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
-    private static final int STATE_CONNECTED = 2;
+    private static final int STATE_CONNECTED = 1;
+    private static final int STATE_CONNECTING = 2;
+    private static final int STATE_RECONNECTING = 3;
     private int mConnectionState = STATE_DISCONNECTED;
 
     private boolean mCheck1 = false;
@@ -129,7 +130,11 @@ public class TestBLEFragment extends Fragment {
             menu.findItem(R.id.menu_connecting).setVisible(false);
             menu.findItem(R.id.menu_refresh).setActionView(null);
         } else {
-            mConnectionText.setText(R.string.connecting_feedback);
+            if (mConnectionState == STATE_CONNECTING) {
+                mConnectionText.setText(R.string.connecting_feedback);
+            } else {
+                mConnectionText.setText(R.string.reconnecting_feedback);
+            }
             mConnectionBar.setVisibility(View.VISIBLE);
 
             menu.findItem(R.id.menu_disconnect).setVisible(false);
@@ -257,15 +262,12 @@ public class TestBLEFragment extends Fragment {
         return v;
     }
 
-    private static final int STEP_MODIFIER = 32;
-    private static final int MAX_STEP = 4000;
-    private static final int MIN_STEP = 0;
     private static final int STEP_INCREMENT = 100;
     private void increaseMotorPos(boolean b) {
         String CpS = String.valueOf(mCPTextView.getText());
         Log.d("increaseMotorPos: ", "" + CpS);
         int CpWithModifier = Integer.parseInt(CpS);
-        int Cp = CpWithModifier/32;
+        int Cp = CpWithModifier/BluetoothLeService.STEP_MODIFIER;
         Log.d("increaseMotorPos2: ", "" + Cp);
         int Ip = Cp;
         if (b) {
@@ -274,18 +276,18 @@ public class TestBLEFragment extends Fragment {
             Ip -= STEP_INCREMENT;
         }
 
-        if (Ip >= MIN_STEP && Ip <= MAX_STEP) {
-            int modifiedIp = Ip * STEP_MODIFIER;
+        if (Ip >= BluetoothLeService.MIN_STEP && Ip <= BluetoothLeService.MAX_STEP) {
+            int modifiedIp = Ip * BluetoothLeService.STEP_MODIFIER;
 
             mIPTextView.setText("" + modifiedIp);
             mBluetoothLeService.setIntendedPosition(Ip);
             mBluetoothLeService.movingMotor();
 
 
-        } else if (Ip < MIN_STEP) {
-            Toast.makeText(getActivity(), "Can\'t go to Intended pos of " + Ip*STEP_MODIFIER, Toast.LENGTH_SHORT).show();
-        } else if (Ip > MAX_STEP) {
-            Toast.makeText(getActivity(), "Can\'t go to Intended pos of " + Ip*STEP_MODIFIER, Toast.LENGTH_SHORT).show();
+        } else if (Ip < BluetoothLeService.MIN_STEP) {
+            Toast.makeText(getActivity(), "Can\'t go to Intended pos of " + Ip*BluetoothLeService.STEP_MODIFIER, Toast.LENGTH_SHORT).show();
+        } else if (Ip > BluetoothLeService.MAX_STEP) {
+            Toast.makeText(getActivity(), "Can\'t go to Intended pos of " + Ip*BluetoothLeService.STEP_MODIFIER, Toast.LENGTH_SHORT).show();
         }
         mMotorDecButton.setEnabled(false);
         mMotorIncButton.setEnabled(false);
@@ -336,6 +338,8 @@ public class TestBLEFragment extends Fragment {
         openBackgroundThread();
 
         if (mBluetoothLeService != null && mBluetoothLeService.isInitialized()) {
+            mConnectionState = STATE_RECONNECTING;
+            getActivity().invalidateOptionsMenu();
             mBluetoothLeService.reconnect();
 
         }
@@ -413,7 +417,7 @@ public class TestBLEFragment extends Fragment {
         intentFilter.addAction(BluetoothLeService.ACTION_SCANNING_IN_PROGRESS);
         intentFilter.addAction(BluetoothLeService.ACTION_SCANNING_FAIL);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_CPOS);
-        intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_LASER_STATE);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_LASER_STATE_ZEROED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_MMODE);
         return intentFilter;
     }
@@ -449,11 +453,20 @@ public class TestBLEFragment extends Fragment {
                 }
             } else if (BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_CPOS.equals(action)) {
                 int currentPosition = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0);
-                Log.d(TAG, "ACTION_DATA_CHANGED_MOTOR_CPOS " + currentPosition);
-                mCPTextView.setText("" + currentPosition * STEP_MODIFIER);
+                //Log.d(TAG, "ACTION_DATA_CHANGED_MOTOR_CPOS " + currentPosition);
+                mCPTextView.setText("" + currentPosition * BluetoothLeService.STEP_MODIFIER);
                 mMotorDecButton.setEnabled(true);
                 mMotorIncButton.setEnabled(true);
-            } else if (BluetoothLeService.ACTION_DATA_CHANGED_LASER_STATE.equals(action)) {
+            } else if (BluetoothLeService.ACTION_DATA_LASER_STATE_ZEROED.equals(action)) {
+                Log.d(TAG, "ACTION_DATA_CHANGED_LASER_STATE");
+                int laserCurrentState = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, BluetoothLeService.LASER_OFF);
+                if (laserCurrentState == BluetoothLeService.LASER_OFF) {
+                    mLaserSwitch.setChecked(false);
+                } else {
+                    mLaserSwitch.setChecked(true);
+                }
+
+
 
             } else if (BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_MMODE.equals(action)) {
                 int motorMode = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0);

@@ -65,12 +65,12 @@ public class BluetoothLeService extends Service {
     public final static String ACTION_GATT_CONNECTED = "ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_DISCONNECTED = "ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_SERVICES_DISCOVERED = "ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_READ = "ACTION_DATA_AVAILABLE";
+
+    public final static String ACTION_DATA_READ = "ACTION_DATA_READ";
 
     public final static String ACTION_DATA_CHANGED ="ACTION_DATA_CHANGED";
     public final static String ACTION_DATA_CHANGED_MOTOR_CPOS ="ACTION_DATA_CHANGED_MOTOR_CPOS";
     public final static String ACTION_DATA_CHANGED_MOTOR_MMODE ="ACTION_DATA_CHANGED_MOTOR_MMODE";
-    public final static String ACTION_DATA_CHANGED_LASER_STATE ="ACTION_DATA_CHANGED_LASER_STATE";
 
     public final static String ACTION_DATA_WRITE_FAIL = "ACTION_DATA_WRITE_FAIL";
     public final static String ACTION_DATA_WRITE_SUCCESSFUL = "ACTION_DATA_WRITE_SUCCESSFUL";
@@ -78,6 +78,7 @@ public class BluetoothLeService extends Service {
 
     public final static String ACTION_ZEROING_START = "ACTION_ZEROING_START";
     public final static String ACTION_ZEROING_END = "ACTION_ZEROING_END";
+    public final static String ACTION_DATA_LASER_STATE_ZEROED = "ACTION_DATA_LASER_STATE_ZEROED";
 
     public final static String ACTION_SCANNING_IN_PROGRESS = "ACTION_SCANNING_IN_PROGRESS";
     public final static String ACTION_SCANNING_FAIL = "ACTION_SCANNING_FAIL";
@@ -91,9 +92,9 @@ public class BluetoothLeService extends Service {
     public static final int LASER_OFF = 0;
     public static final int LASER_ON = 1;
 
-    private static final int STEP_MODIFIER = 32;
-    private static final int MAX_STEP = 4000;
-    private static final int MIN_STEP = 0;
+    public static final int STEP_MODIFIER = 32;
+    public static final int MAX_STEP = 4010;
+    public static final int MIN_STEP = 10;
 
     public int getIntendedPosition() {
         return mIntendedPosition;
@@ -325,11 +326,7 @@ public class BluetoothLeService extends Service {
                 //Log.d("detail3DScan" ," change MM: " + dataInt);
                 //Log.d("detail3DScan" ," target MM: " + MOVE_STATE_STOPPED);
                 broadcastUpdate(ACTION_DATA_CHANGED_MOTOR_MMODE, dataInt);
-            } else if (uuid.equals(LaserGattAttributes.getUUIDInString(LaserGattAttributes.CHAR_LASER_STATUS))) {
-                broadcastUpdate(ACTION_DATA_CHANGED_LASER_STATE, dataInt);
-
             }
-
 
             zeroingDevice();
         }
@@ -344,13 +341,19 @@ public class BluetoothLeService extends Service {
                 Log.d(TAG ," ACTION_DATA_WRITE_FAIL");
                 broadcastUpdate(ACTION_DATA_WRITE_FAIL);
             } else {
-                Log.d(TAG ," ACTION_DATA_WRITE_SUCCESS");
+                //Log.d(TAG ," ACTION_DATA_WRITE_SUCCESS");
+                String uuid = characteristic.getUuid().toString();
+                if (uuid.equals(LaserGattAttributes.getUUIDInString(LaserGattAttributes.CHAR_LASER_STATUS))) {
+                    //Log.d(TAG ," ACTION_DATA_WRITE_SUCCESS_laser");
+                    zeroingDevice();
+                }
             }
         }
 
     };
 
 
+    private Object mLaserWaitObject = new Object();
     private void zeroingDevice() {
         if (mZeroingFlag) {
             Log.d(TAG, "mZeroingIndex " + mZeroingIndex);
@@ -363,13 +366,14 @@ public class BluetoothLeService extends Service {
                     int modifiedIP = mIntendedPosition * STEP_MODIFIER;
                     byte[] IPData = ByteUtil.reverseBytes(ByteUtil.getIntToByteArray(modifiedIP));
 
-                    Log.d(TAG, "zeroing motor position " + ByteUtil.getBinaryString(IPData));
+                    Log.d(TAG, "zeroing motor position in binary value " + ByteUtil.getBinaryString(IPData));
                     mIPCharacteristic.setValue(IPData);
                     //mIPCharacteristic.set
                     mBluetoothGatt.writeCharacteristic(mIPCharacteristic);
                     break;
                 case 0:
                     switchLaser(LASER_OFF);
+                    broadcastUpdate(ACTION_DATA_LASER_STATE_ZEROED, LASER_OFF);
                     break;
 
                 default:
@@ -419,13 +423,13 @@ public class BluetoothLeService extends Service {
         mInitializingIndex++;
     }
 
-    public void switchLaser(int laserState) {
+    public boolean switchLaser(int laserState) {
 
         String laserStateString = String.valueOf(laserState);
         byte[] LaserData = {new Byte(laserStateString)};
         //Log.d(detail3DScanTag, "" + getBinaryString(LaserData));
         mLaserCharacteristic.setValue(LaserData);
-        mBluetoothGatt.writeCharacteristic(mLaserCharacteristic);
+        return mBluetoothGatt.writeCharacteristic(mLaserCharacteristic);
 
     }
 
