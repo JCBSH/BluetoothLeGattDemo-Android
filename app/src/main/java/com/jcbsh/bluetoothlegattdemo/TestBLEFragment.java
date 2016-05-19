@@ -5,17 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -45,10 +35,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by JCBSH on 23/02/2016.
@@ -243,32 +230,67 @@ public class TestBLEFragment extends Fragment {
         mMotorIncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                increaseMotorPos(true);
             }
         });
 
         mMotorDecButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                increaseMotorPos(false);
             }
         });
 
         mLaserSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
                 if (isChecked) {
-                    byte[] data = {new Byte("1")};
-
+                    mBluetoothLeService.switchLaser(mBluetoothLeService.LASER_ON);
                 } else {
-                    byte[] data = {new Byte("0")};
+                    mBluetoothLeService.switchLaser(mBluetoothLeService.LASER_OFF);
                 }
-
-                //todo mBluetoothGatt.writeCharacteristic(mLaserCharacteristic);
-
             }
         });
 
         return v;
+    }
+
+    private static final int STEP_MODIFIER = 32;
+    private static final int MAX_STEP = 4000;
+    private static final int MIN_STEP = 0;
+    private static final int STEP_INCREMENT = 100;
+    private void increaseMotorPos(boolean b) {
+        String CpS = String.valueOf(mCPTextView.getText());
+        Log.d("increaseMotorPos: ", "" + CpS);
+        int CpWithModifier = Integer.parseInt(CpS);
+        int Cp = CpWithModifier/32;
+        Log.d("increaseMotorPos2: ", "" + Cp);
+        int Ip = Cp;
+        if (b) {
+            Ip += STEP_INCREMENT;
+        } else {
+            Ip -= STEP_INCREMENT;
+        }
+
+        if (Ip >= MIN_STEP && Ip <= MAX_STEP) {
+            int modifiedIp = Ip * STEP_MODIFIER;
+
+            mIPTextView.setText("" + modifiedIp);
+            mBluetoothLeService.setIntendedPosition(Ip);
+            mBluetoothLeService.movingMotor();
+
+
+        } else if (Ip < MIN_STEP) {
+            Toast.makeText(getActivity(), "Can\'t go to Intended pos of " + Ip*STEP_MODIFIER, Toast.LENGTH_SHORT).show();
+        } else if (Ip > MAX_STEP) {
+            Toast.makeText(getActivity(), "Can\'t go to Intended pos of " + Ip*STEP_MODIFIER, Toast.LENGTH_SHORT).show();
+        }
+        mMotorDecButton.setEnabled(false);
+        mMotorIncButton.setEnabled(false);
+        //byte[] data =  getIntToByteArray(300);
+        //Log.d("increaseMotorPos3: ", getBinaryString(data));
+        //mIPCharacteristic.setValue(data);
+        //mBluetoothGatt.writeCharacteristic()
     }
 
     @Override
@@ -388,6 +410,8 @@ public class TestBLEFragment extends Fragment {
         intentFilter.addAction(BluetoothLeService.ACTION_ZEROING_END);
         intentFilter.addAction(BluetoothLeService.ACTION_SCANNING_IN_PROGRESS);
         intentFilter.addAction(BluetoothLeService.ACTION_SCANNING_FAIL);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_LASER_STATE);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_MMODE);
         return intentFilter;
     }
 
@@ -400,26 +424,49 @@ public class TestBLEFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnectionState = STATE_CONNECTED;
-                getActivity().invalidateOptionsMenu();
+
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnectionState = STATE_DISCONNECTED;
                 getActivity().invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_ZEROING_START.equals(action)) {
-                int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
-                getActivity().setRequestedOrientation(ORIENTATIONS_SCREEN.get(rotation));
+                //int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
+                //getActivity().setRequestedOrientation(ORIENTATIONS_SCREEN.get(rotation));
             } else if (BluetoothLeService.ACTION_ZEROING_END.equals(action)) {
-                getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+                //getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+                mConnectionState = STATE_CONNECTED;
+                getActivity().invalidateOptionsMenu();
 
             } else if (BluetoothLeService.ACTION_SCANNING_FAIL.equals(action)) {
                 if (getActivity() != null) {
                     mConnectionState = STATE_DISCONNECTED;
                     getActivity().invalidateOptionsMenu();
-                    //todo
+                    showAlertWithoutFinish(getActivity().getResources().getString(R.string.bluetooth_error_alert_title)
+                            , "fail to detect bluetooth");
+                }
+            } else if (BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_CPOS.equals(action)) {
+                int currentPosition = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0);
+                mCPTextView.setText("" + currentPosition);
+                mMotorDecButton.setEnabled(true);
+                mMotorIncButton.setEnabled(true);
+            } else if (BluetoothLeService.ACTION_DATA_CHANGED_LASER_STATE.equals(action)) {
+
+            } else if (BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_MMODE.equals(action)) {
+                int motorMode = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0);
+                mMoveStatusIntTextView.setText("" + motorMode);
+                switch (motorMode) {
+                    case BluetoothLeService.MOVE_STATE_UNDEFINED:
+                        mMoveStatusStringTextView.setText(R.string.motor_initialize_status);
+                        break;
+                    case BluetoothLeService.MOVE_STATE_STOPPED:
+                        mMoveStatusStringTextView.setText(R.string.motor_stop_status);
+                        break;
+                    case BluetoothLeService.MOVE_STATE_MOVING:
+                        mMoveStatusStringTextView.setText(R.string.motor_moving_status);
+                        break;
                 }
             }
         }
-    };
+    }
 
 
 ////---------------------------------------------////
@@ -440,6 +487,17 @@ public class TestBLEFragment extends Fragment {
                 .show();
     }
 
+    protected void showAlertWithoutFinish(String title, String msg) {
+        new AlertDialog.Builder(getActivity())
+                .setTitle(title)
+                .setMessage(msg)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .show();
+    }
 
 ////---------------------------------------------////
 ////---------------------------------------------////

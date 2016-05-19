@@ -70,6 +70,7 @@ public class BluetoothLeService extends Service {
     public final static String ACTION_DATA_CHANGED ="ACTION_DATA_CHANGED";
     public final static String ACTION_DATA_CHANGED_MOTOR_CPOS ="ACTION_DATA_CHANGED_MOTOR_CPOS";
     public final static String ACTION_DATA_CHANGED_MOTOR_MMODE ="ACTION_DATA_CHANGED_MOTOR_MMODE";
+    public final static String ACTION_DATA_CHANGED_LASER_STATE ="ACTION_DATA_CHANGED_LASER_STATE";
 
     public final static String ACTION_DATA_WRITE_FAIL = "ACTION_DATA_WRITE_FAIL";
     public final static String ACTION_DATA_WRITE_SUCCESSFUL = "ACTION_DATA_WRITE_SUCCESSFUL";
@@ -110,10 +111,9 @@ public class BluetoothLeService extends Service {
     private int mZeroingIndex = 0;
 
 
-    private static final int MOVE_STATE_UNDEFINED = 0;
-    private static final int MOVE_STATE_STOPPED = 1;
-    private static final int MOVE_STATE_MOVING = 2;
-    private int mBLEMovingState = MOVE_STATE_STOPPED;
+    public static final int MOVE_STATE_UNDEFINED = 0;
+    public static final int MOVE_STATE_STOPPED = 1;
+    public static final int MOVE_STATE_MOVING = 2;
 
 
     private void scanLeDevice(final boolean enable) {
@@ -319,13 +319,14 @@ public class BluetoothLeService extends Service {
                 //Log.d("detail3DScan" , " change CP: " + mCurrentPosition);
                 //Log.d("detail3DScan" , " change IP: " + mIntendedPosition);
                 mCurrentPosition = dataInt/STEP_MODIFIER;
-                if (isMotorInPosition()) broadcastUpdate(ACTION_LOOP_SCAN);
+                broadcastUpdate(ACTION_DATA_CHANGED_MOTOR_CPOS, mCurrentPosition);
 
             } else if (uuid.equals(LaserGattAttributes.getUUIDInString(LaserGattAttributes.CHAR_MOTOR_MMODE))) {
                 //Log.d("detail3DScan" ," change MM: " + dataInt);
                 //Log.d("detail3DScan" ," target MM: " + MOVE_STATE_STOPPED);
-                mBLEMovingState = dataInt;
-                if (isMotorInPosition()) broadcastUpdate(ACTION_LOOP_SCAN);
+                broadcastUpdate(ACTION_DATA_CHANGED_MOTOR_MMODE, dataInt);
+            } else if (uuid.equals(LaserGattAttributes.getUUIDInString(LaserGattAttributes.CHAR_LASER_STATUS))) {
+                broadcastUpdate(ACTION_DATA_CHANGED_LASER_STATE, dataInt);
             }
 
 
@@ -346,7 +347,6 @@ public class BluetoothLeService extends Service {
                 String uuid = characteristic.getUuid().toString();
                 if (uuid.equals(LaserGattAttributes.getUUIDInString(LaserGattAttributes.CHAR_LASER_STATUS))) {
                     //Log.d(TAG ," ACTION_DATA_WRITE_SUCCESS_laser");
-                    broadcastUpdate(ACTION_LOOP_SCAN);
                     zeroingDevice();
                 }
             }
@@ -452,14 +452,16 @@ public class BluetoothLeService extends Service {
         mZeroingIndex = 0;
         zeroingDevice();
     }
-    public boolean isMotorInPosition() {
-        return (mIntendedPosition == mCurrentPosition && mBLEMovingState == MOVE_STATE_STOPPED);
-    }
-
 
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
+        sendBroadcast(intent);
+    }
+
+    private void broadcastUpdate(final String action, final int flag) {
+        final Intent intent = new Intent(action);
+        intent.putExtra(EXTRA_DATA, flag);
         sendBroadcast(intent);
     }
 
