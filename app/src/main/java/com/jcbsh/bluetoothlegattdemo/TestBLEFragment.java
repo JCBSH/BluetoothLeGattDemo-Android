@@ -149,8 +149,10 @@ public class TestBLEFragment extends Fragment {
             case R.id.menu_connect:
 
                 if (mBluetoothLeService.isInitialized()) {
+                    Log.d(TAG, "reconnect");
                     mBluetoothLeService.reconnect();
                 } else {
+                    Log.d(TAG, "scanning");
                     mBluetoothLeService.startScan();
                 }
                 mConnectionState = STATE_CONNECTING;
@@ -410,6 +412,7 @@ public class TestBLEFragment extends Fragment {
         intentFilter.addAction(BluetoothLeService.ACTION_ZEROING_END);
         intentFilter.addAction(BluetoothLeService.ACTION_SCANNING_IN_PROGRESS);
         intentFilter.addAction(BluetoothLeService.ACTION_SCANNING_FAIL);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_CPOS);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_LASER_STATE);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_MMODE);
         return intentFilter;
@@ -426,6 +429,7 @@ public class TestBLEFragment extends Fragment {
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
 
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                Log.d(TAG, "ACTION_GATT_DISCONNECTED");
                 mConnectionState = STATE_DISCONNECTED;
                 getActivity().invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_ZEROING_START.equals(action)) {
@@ -445,7 +449,8 @@ public class TestBLEFragment extends Fragment {
                 }
             } else if (BluetoothLeService.ACTION_DATA_CHANGED_MOTOR_CPOS.equals(action)) {
                 int currentPosition = intent.getIntExtra(BluetoothLeService.EXTRA_DATA, 0);
-                mCPTextView.setText("" + currentPosition);
+                Log.d(TAG, "ACTION_DATA_CHANGED_MOTOR_CPOS " + currentPosition);
+                mCPTextView.setText("" + currentPosition * STEP_MODIFIER);
                 mMotorDecButton.setEnabled(true);
                 mMotorIncButton.setEnabled(true);
             } else if (BluetoothLeService.ACTION_DATA_CHANGED_LASER_STATE.equals(action)) {

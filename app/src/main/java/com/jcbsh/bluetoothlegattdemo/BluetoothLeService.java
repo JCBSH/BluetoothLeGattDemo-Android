@@ -221,7 +221,7 @@ public class BluetoothLeService extends Service {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 Log.i(TAG, "Disconnected from GATT server.");
-                if (!mIsExpectedDisconnection) {
+                if (mIsExpectedDisconnection) {
                     broadcastUpdate(intentAction);
                 }
             }
@@ -327,6 +327,7 @@ public class BluetoothLeService extends Service {
                 broadcastUpdate(ACTION_DATA_CHANGED_MOTOR_MMODE, dataInt);
             } else if (uuid.equals(LaserGattAttributes.getUUIDInString(LaserGattAttributes.CHAR_LASER_STATUS))) {
                 broadcastUpdate(ACTION_DATA_CHANGED_LASER_STATE, dataInt);
+
             }
 
 
@@ -340,15 +341,10 @@ public class BluetoothLeService extends Service {
             super.onCharacteristicWrite(gatt, characteristic, status);
 
             if (status == BluetoothGatt.GATT_FAILURE) {
-                //Log.d(TAG ," ACTION_DATA_WRITE_FAIL");
+                Log.d(TAG ," ACTION_DATA_WRITE_FAIL");
                 broadcastUpdate(ACTION_DATA_WRITE_FAIL);
             } else {
-                //Log.d(TAG ," ACTION_DATA_WRITE_SUCCESS");
-                String uuid = characteristic.getUuid().toString();
-                if (uuid.equals(LaserGattAttributes.getUUIDInString(LaserGattAttributes.CHAR_LASER_STATUS))) {
-                    //Log.d(TAG ," ACTION_DATA_WRITE_SUCCESS_laser");
-                    zeroingDevice();
-                }
+                Log.d(TAG ," ACTION_DATA_WRITE_SUCCESS");
             }
         }
 
@@ -357,8 +353,9 @@ public class BluetoothLeService extends Service {
 
     private void zeroingDevice() {
         if (mZeroingFlag) {
+            Log.d(TAG, "mZeroingIndex " + mZeroingIndex);
             switch (mZeroingIndex) {
-                case 0:
+                case 1:
 
                     broadcastUpdate(ACTION_ZEROING_START);
 
@@ -371,7 +368,7 @@ public class BluetoothLeService extends Service {
                     //mIPCharacteristic.set
                     mBluetoothGatt.writeCharacteristic(mIPCharacteristic);
                     break;
-                case 1:
+                case 0:
                     switchLaser(LASER_OFF);
                     break;
 
@@ -675,7 +672,4 @@ public class BluetoothLeService extends Service {
     }
 
 
-    public int getConnectionState() {
-        return mConnectionState;
-    }
 }
