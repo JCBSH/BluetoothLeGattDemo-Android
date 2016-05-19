@@ -17,4 +17,6 @@
     <string name="error_bluetooth_not_supported">BlueTooth Low Energy not support!</string>
     <string name="error_bluetooth_enable_fail">failed to enable bluetooth</string>
     <string name="bluetooth_error_alert_title">BlueTooth error</string>
+    <string name="not_connected_feedback">Not Connected</string>
+    <string name="connecting_feedback">Connecting</string>
 </resources>

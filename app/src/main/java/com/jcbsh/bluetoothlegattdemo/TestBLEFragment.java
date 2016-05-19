@@ -40,6 +40,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -127,16 +128,23 @@ public class TestBLEFragment extends Fragment {
         inflater.inflate(R.menu.test_ble_fragment, menu);
 
         if (mConnectionState == STATE_DISCONNECTED) {
+            mUIBlockContainer.setVisibility(View.VISIBLE);
+            mConnectionText.setText(R.string.not_connected_feedback);
+            mConnectionBar.setVisibility(View.INVISIBLE);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_connecting).setVisible(false);
             menu.findItem(R.id.menu_refresh).setActionView(null);
         } else if (mConnectionState == STATE_CONNECTED) {
+            mUIBlockContainer.setVisibility(View.INVISIBLE);
             menu.findItem(R.id.menu_disconnect).setVisible(true);
             menu.findItem(R.id.menu_connect).setVisible(false);
             menu.findItem(R.id.menu_connecting).setVisible(false);
             menu.findItem(R.id.menu_refresh).setActionView(null);
         } else {
+            mConnectionText.setText(R.string.connecting_feedback);
+            mConnectionBar.setVisibility(View.VISIBLE);
+
             menu.findItem(R.id.menu_disconnect).setVisible(false);
             menu.findItem(R.id.menu_connect).setVisible(false);
             menu.findItem(R.id.menu_connecting).setVisible(true);
@@ -187,6 +195,10 @@ public class TestBLEFragment extends Fragment {
     private Handler mHandler;
     private LaserGattAttributes mLaserAttributes;
     private BluetoothLeScanner mBluetoothLeScanner;
+    private View mUIBlockContainer;
+    private ProgressBar mConnectionBar;
+    private TextView mConnectionText;
+
     private TextView mCPTextView;
     private TextView mIPTextView;
     private Button mMotorIncButton;
@@ -201,11 +213,17 @@ public class TestBLEFragment extends Fragment {
     private TextView mMoveStatusStringTextView;
     private TextView mMoveStatusIntTextView;
 
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.d(LIFE_TAG, "onCreateView() ");
 
         View v = inflater.inflate(R.layout.fragment_test_ble, container, false);
+
+        mUIBlockContainer = (View) v.findViewById(R.id.ui_blocking_container);
+        mConnectionBar = (ProgressBar) v.findViewById(R.id.connection_feedback_bar);
+        mConnectionText = (TextView) v.findViewById(R.id.connection_feedback_text);
 
         mLaserSwitch = (Switch) v.findViewById(R.id.laser_switch);
         mCPTextView = (TextView) v.findViewById(R.id.motor_current_position);
